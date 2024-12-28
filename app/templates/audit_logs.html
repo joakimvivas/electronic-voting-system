@@ -1,0 +1,52 @@
+<!-- app/templates/audit_logs.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="text-lg font-bold mb-4">Historial de Acciones</h2>
+
+<table class="min-w-full bg-white border border-gray-200">
+  <thead class="bg-gray-100">
+    <tr>
+      <th class="px-4 py-2 border-b border-gray-200 text-left">Acción</th>
+      <th class="px-4 py-2 border-b border-gray-200 text-left">Detalles</th>
+      <th class="px-4 py-2 border-b border-gray-200 text-left">Fecha/Hora</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log_item in logs %}
+      <tr class="border-b">
+        <td class="px-4 py-2">
+          {{ log_item.action }}
+        </td>
+        <td class="px-4 py-2">
+          {% if log_item.email %}
+            Votante: {{ log_item.email }}
+          {% elif log_item.voting_id %}
+            ID: {{ log_item.voting_id }}
+          {% endif %}
+          {% if log_item.opcion %}
+            <br/>
+            Opción: {{ log_item.opcion }}
+          {% endif %}
+        </td>
+        <td class="px-4 py-2 text-gray-500">
+          {% if log_item.timestamp %}
+            {{ log_item.timestamp }}
+          {% else %}
+            N/A
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="mt-6">
+  <a 
+    href="/admin_panel?voting_id={{ voting_id }}&key={{ key }}"
+    class="inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+  >
+    Volver al Panel
+  </a>
+</div>
+{% endblock %}

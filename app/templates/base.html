@@ -1,0 +1,23 @@
+<!-- app/templates/base.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title if title else "Voto Electrónico" }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans leading-normal tracking-normal">
+  <header class="bg-indigo-600 text-white p-4 shadow-md">
+    <h1 class="text-2xl font-semibold">Voto Electrónico</h1>
+  </header>
+
+  <main class="container mx-auto p-6">
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <footer class="bg-gray-800 text-white p-4 mt-4 text-center">
+    <p>© 2024 - Proyecto de Voto Electrónico</p>
+  </footer>
+</body>
+</html>

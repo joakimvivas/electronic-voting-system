@@ -1,0 +1,42 @@
+<!-- app/templates/votacion_creada.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white p-6 rounded shadow-md">
+  <h1 class="text-xl font-bold mb-4">¡Votación creada con éxito!</h1>
+
+  <!-- Resumen de la votación creada -->
+  <div class="mb-4">
+    <p><strong>Título:</strong> {{ titulo if titulo else 'N/A' }}</p>
+    <p><strong>Entidad:</strong> {{ entidad if entidad else 'N/A' }}</p>
+
+    {% if logotipo %}
+      <div class="mt-2 mb-2">
+        <img src="{{ logotipo }}" alt="Logotipo" class="h-16 w-16 object-cover">
+      </div>
+    {% endif %}
+
+    {% if opciones %}
+      <p><strong>Opciones:</strong></p>
+      <ul class="list-disc list-inside">
+        {% for op in opciones %}
+          <li>{{ op }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p><strong>Opciones:</strong> N/A</p>
+    {% endif %}
+  </div>
+
+  <!-- Información de ID y clave -->
+  <p><strong>ID de votación:</strong> {{ voting_id }}</p>
+  <p><strong>Clave de Administración:</strong> {{ admin_key }}</p>
+
+  <a 
+    href="/admin_panel?voting_id={{ voting_id }}&key={{ admin_key }}"
+    class="inline-block mt-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+  >
+    Ir al panel de administración
+  </a>
+</div>
+{% endblock %}
