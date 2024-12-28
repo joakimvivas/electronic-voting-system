@@ -39,8 +39,6 @@ This repository contains a lightweight electronic voting system built with **Fas
   - Simple roles: **Admin** (creates and manages the voting) and **Voters** (cast votes).  
   - Prevents multiple votes with the same token (once a voter has cast a vote, `ya_voto` is set to `true`).
 
----
-
 ## Typical Workflow
 
 1. **Create Voting**  
@@ -65,6 +63,12 @@ This repository contains a lightweight electronic voting system built with **Fas
 5. **Encryption & Security**  
    - Files are encrypted so only those with the correct key can read or modify them.  
    - Tokens ensure each voter can only cast a single vote.
+
+## To-do items for upcoming functions
+
+- [ ] Close (manually) a vote, it will be marked as finished
+- [ ] Mark the voting end date (automatically)
+- [ ] ...
 
 ## Prerequisites
 
