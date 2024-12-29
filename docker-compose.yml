@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: electronic-vote-system
+    ports:
+      - "8012:3000"
+    volumes:
+      - .:/app
+    restart: always
