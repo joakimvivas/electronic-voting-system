@@ -138,6 +138,26 @@ INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 ```
 
+## Running the project with Docker
+
+Before you can start with Docker, you should have Docker installed, you can do so by following this Docker guide: [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
+
+Next, the repository has two files, one called ```Dockerfile``` and another ```docker-compose.yml```, to launch the project using Docker you just have to run this command from the root of the project:
+
+1. Execute the following command:
+
+```sh
+docker-compose up -d
+```
+
+At the end of the process, you should have a result similar to:
+
+```
+Creating electronic-vote-system ... done
+```
+
+To access it, you should have it published in port ```8012```. So, with the browser, you should type ```http://localhost:8012/``` or the IP address of your server.
+
 ## Licensing
 
 All packages in this repository are open-source software and licensed under the [MIT License](https://github.com/joakimvivas/marco-bot/blob/main/LICENSE). By contributing in this repository, you agree to release your code under this license as well.
