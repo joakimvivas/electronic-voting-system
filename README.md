@@ -46,15 +46,23 @@ This repository contains a lightweight electronic voting system built with **Fas
    - The backend generates a random `voting_id` and a secret key.  
    - The user (admin) receives these details.
 
+![Create voting](Create-Votation.png)
+
+![Votation created](Votation-created.png)
+
 2. **Admin Panel**  
    - Accessed via `/admin_panel?voting_id={...}&key={...}`.  
    - Shows the list of voting options and allows adding or removing voters.  
    - Each voter receives a unique token mapped to their email.
 
+![Admin Panel of Voting](Admin-Votation.png)
+
 3. **Voting**  
    - A voter visits `/votar?token=...`.  
    - The form displays the voting entity, logo, and available options.  
    - Submitting a vote updates the encrypted file and records the action in logs.
+
+![Vote](Vote.png)
 
 4. **Audit**  
    - Accessed via `/admin_audit?voting_id={...}&key={...}`.  
