@@ -16,7 +16,7 @@ SUPABASE_URL = os.getenv("SUPABASE_SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_SUPABASE_ANON_KEY", "")
 SUPABASE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME", "votaciones-enc")
 
-######### Cliente de Supabase (si las vars están definidas) #########
+######### Cliente de Supabase #########
 supabase: Client = None
 if SUPABASE_URL and SUPABASE_ANON_KEY:
     supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
