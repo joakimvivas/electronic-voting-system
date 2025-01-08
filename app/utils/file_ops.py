@@ -14,7 +14,7 @@ from supabase import create_client, Client
 STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "local")
 SUPABASE_URL = os.getenv("SUPABASE_SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_SUPABASE_ANON_KEY", "")
-SUPABASE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME", "votaciones-enc")
+SUPABASE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME", "electronic-voting-system")
 
 ######### Cliente de Supabase #########
 supabase: Client = None
