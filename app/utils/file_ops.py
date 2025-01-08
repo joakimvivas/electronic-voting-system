@@ -4,8 +4,10 @@ import json
 import os
 from typing import Any
 import logging
-
 from .encrypt import encrypt_data, decrypt_data
+
+# Logging DEBUG mode
+logging.basicConfig(level=logging.DEBUG)
 
 # Supabase
 from supabase import create_client, Client
@@ -78,6 +80,7 @@ def _upload_to_supabase(filename: str, data: bytes) -> None:
     except Exception as e:
         # Log completo de la excepción
         logging.exception(f"Excepción subiendo '{filename}' a Supabase:")
+        print("Detalle de la excepción:", e)
         raise
 
 def _download_from_supabase(filename: str) -> bytes:
