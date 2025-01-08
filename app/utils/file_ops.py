@@ -16,14 +16,16 @@ SUPABASE_URL = os.getenv("SUPABASE_SUPABASE_URL", "")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_SUPABASE_ANON_KEY", "")
 SUPABASE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME", "electronic-voting-system")
 
-######### Cliente de Supabase #########
+######### Inicializar Supabase si corresponde #########
 supabase: Client = None
 if SUPABASE_URL and SUPABASE_ANON_KEY:
     supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 else:
     if STORAGE_BACKEND == "supabase":
-        logging.warning("ATENCIÓN: STORAGE_BACKEND=supabase, pero SUPABASE_URL/KEY no están configuradas.")
-        # supabase seguirá siendo None, lo que generará un error si se intenta usar
+        logging.warning(
+            "ATENCIÓN: STORAGE_BACKEND=supabase, pero SUPABASE_URL/KEY no están configuradas."
+        )
+        # supabase seguirá siendo None, lo que causará error si se intenta usar
 
 ######### Lógica local #########
 VOTACIONES_DIR = "votaciones"
@@ -53,32 +55,56 @@ def _load_voting_file_local(voting_id: str) -> bytes:
 def _upload_to_supabase(filename: str, data: bytes) -> None:
     """
     Sube 'data' (bytes) al bucket de Supabase con la 'key' = filename.
+    Utiliza upsert=True y un contentType genérico para binarios.
     """
     if not supabase:
         raise RuntimeError("Supabase client no inicializado o variables de entorno no configuradas.")
-    
-    response = supabase.storage.from_(SUPABASE_BUCKET_NAME).upload(filename, data)
-    if "error" in response and response["error"]:
-        raise RuntimeError(f"Error subiendo a Supabase: {response['error']}")
+
+    try:
+        logging.debug(f"Subiendo archivo '{filename}' al bucket '{SUPABASE_BUCKET_NAME}' con upsert y contentType.")
+        response = supabase.storage.from_(SUPABASE_BUCKET_NAME).upload(
+            filename,
+            data,
+            {
+                "upsert": True,
+                "contentType": "application/octet-stream"
+            }
+        )
+        logging.debug(f"Supabase upload response: {response}")
+
+        # Verificar si hay error en la respuesta
+        if "error" in response and response["error"]:
+            raise RuntimeError(f"Error subiendo a Supabase: {response['error']}")
+    except Exception as e:
+        # Log completo de la excepción
+        logging.exception(f"Excepción subiendo '{filename}' a Supabase:")
+        raise
 
 def _download_from_supabase(filename: str) -> bytes:
     """
     Descarga bytes desde el bucket de Supabase.
-    Retorna b'' si no existe.
+    Retorna b'' si no existe o si ocurre algún error.
     """
     if not supabase:
         raise RuntimeError("Supabase client no inicializado o variables de entorno no configuradas.")
-    
+
     try:
+        logging.debug(f"Descargando archivo '{filename}' del bucket '{SUPABASE_BUCKET_NAME}'...")
         content = supabase.storage.from_(SUPABASE_BUCKET_NAME).download(filename)
-        # Según la versión de supabase-py, 'download' puede retornar directamente bytes o un objeto
+        logging.debug(f"Descarga completada. Tipo de 'content': {type(content)}")
+
+        # Supabase-py a veces retorna bytes directos, otras un objeto.
+        # Ajusta según tu versión. Si no hay contenido, devolvemos b''.
         if not content:
             return b""
-        # 'content' podría ser bytes o un objeto con .decode() 
-        # Ajusta si tu versión maneja la respuesta diferente.
+        if isinstance(content, bytes):
+            return content
+        # Si es un objeto tipo HTTPResponse, quizá debas usar content.read() o similar.
+        # Haz pruebas con logs.
         return content
+
     except Exception as e:
-        logging.warning(f"No se pudo descargar {filename} desde Supabase. Error: {e}")
+        logging.exception(f"No se pudo descargar '{filename}' desde Supabase:")
         return b""
 
 ######### Funciones principales #########
