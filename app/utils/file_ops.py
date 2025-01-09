@@ -4,10 +4,7 @@ import json
 import os
 from typing import Any
 import logging
-
 from .encrypt import encrypt_data, decrypt_data
-
-# Supabase
 from supabase import create_client, Client
 
 ######### Variables de entorno #########
@@ -48,27 +45,30 @@ def _load_voting_file_local(voting_id: str) -> bytes:
 ######### Lógica con Supabase #########
 def _upload_to_supabase(filename: str, data: bytes) -> None:
     if not supabase:
-        raise RuntimeError("Supabase client no inicializado o variables de entorno no configuradas.")
+        raise RuntimeError("Supabase client not initialized or environment variables missing.")
 
     try:
-        logging.debug(f"Subiendo archivo '{filename}' al bucket '{SUPABASE_BUCKET_NAME}'...")
-        # Opciones sin bool para evitar el error
-        # Si no necesitas sobreescribir, puedes quitar "upsert" totalmente.
+        logging.debug(f"Uploading file '{filename}' to bucket '{SUPABASE_BUCKET_NAME}'...")
         response = supabase.storage.from_(SUPABASE_BUCKET_NAME).upload(
             filename,
             data,
             {
-                # "upsert": "true",  # Actívalo si necesitas sobreescribir archivos. O bien elimínalo si no hace falta.
+                # "upsert": "true",    # only if you want to allow overwriting
                 "content_type": "application/octet-stream"
             }
         )
         logging.debug(f"Supabase upload response: {response}")
 
-        if "error" in response and response["error"]:
-            raise RuntimeError(f"Error subiendo a Supabase: {response['error']}")
+        # If your supabase-py version returns an object, check response.error or response.status_code
+        # For example:
+        if hasattr(response, "error") and response.error:
+            raise RuntimeError(f"Error uploading to Supabase: {response.error}")
+        # If you see that "status_code" is available, you might do something like:
+        # if response.status_code != 200:
+        #     raise RuntimeError("Upload to Supabase returned non-200 status code.")
     except Exception as e:
-        logging.exception(f"Excepción subiendo '{filename}' a Supabase:")
-        print("Detalle de la excepción:", e)
+        logging.exception(f"Exception uploading '{filename}' to Supabase:")
+        print("Exception details:", e)
         raise
 
 def _download_from_supabase(filename: str) -> bytes:
