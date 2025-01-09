@@ -4,10 +4,8 @@ import json
 import os
 from typing import Any
 import logging
-from .encrypt import encrypt_data, decrypt_data
 
-# Logging DEBUG mode
-logging.basicConfig(level=logging.DEBUG)
+from .encrypt import encrypt_data, decrypt_data
 
 # Supabase
 from supabase import create_client, Client
@@ -33,9 +31,6 @@ else:
 VOTACIONES_DIR = "votaciones"
 
 def _save_voting_file_local(voting_id: str, encrypted_data: bytes):
-    """
-    Guarda el fichero encriptado localmente en votaciones/<voting_id>.enc
-    """
     if not os.path.exists(VOTACIONES_DIR):
         os.makedirs(VOTACIONES_DIR)
 
@@ -44,9 +39,6 @@ def _save_voting_file_local(voting_id: str, encrypted_data: bytes):
         f.write(encrypted_data)
 
 def _load_voting_file_local(voting_id: str) -> bytes:
-    """
-    Lee el fichero encriptado localmente.
-    """
     file_path = os.path.join(VOTACIONES_DIR, f"{voting_id}.enc")
     if not os.path.isfile(file_path):
         raise FileNotFoundError("No existe el fichero de votación local")
@@ -55,39 +47,31 @@ def _load_voting_file_local(voting_id: str) -> bytes:
 
 ######### Lógica con Supabase #########
 def _upload_to_supabase(filename: str, data: bytes) -> None:
-    """
-    Sube 'data' (bytes) al bucket de Supabase con la 'key' = filename.
-    Utiliza upsert=True y un contentType genérico para binarios.
-    """
     if not supabase:
         raise RuntimeError("Supabase client no inicializado o variables de entorno no configuradas.")
 
     try:
-        logging.debug(f"Subiendo archivo '{filename}' al bucket '{SUPABASE_BUCKET_NAME}' con upsert y contentType.")
+        logging.debug(f"Subiendo archivo '{filename}' al bucket '{SUPABASE_BUCKET_NAME}'...")
+        # Opciones sin bool para evitar el error
+        # Si no necesitas sobreescribir, puedes quitar "upsert" totalmente.
         response = supabase.storage.from_(SUPABASE_BUCKET_NAME).upload(
             filename,
             data,
             {
-                "upsert": True,
-                "contentType": "application/octet-stream"
+                # "upsert": "true",  # Actívalo si necesitas sobreescribir archivos. O bien elimínalo si no hace falta.
+                "content_type": "application/octet-stream"
             }
         )
         logging.debug(f"Supabase upload response: {response}")
 
-        # Verificar si hay error en la respuesta
         if "error" in response and response["error"]:
             raise RuntimeError(f"Error subiendo a Supabase: {response['error']}")
     except Exception as e:
-        # Log completo de la excepción
         logging.exception(f"Excepción subiendo '{filename}' a Supabase:")
         print("Detalle de la excepción:", e)
         raise
 
 def _download_from_supabase(filename: str) -> bytes:
-    """
-    Descarga bytes desde el bucket de Supabase.
-    Retorna b'' si no existe o si ocurre algún error.
-    """
     if not supabase:
         raise RuntimeError("Supabase client no inicializado o variables de entorno no configuradas.")
 
@@ -96,28 +80,17 @@ def _download_from_supabase(filename: str) -> bytes:
         content = supabase.storage.from_(SUPABASE_BUCKET_NAME).download(filename)
         logging.debug(f"Descarga completada. Tipo de 'content': {type(content)}")
 
-        # Supabase-py a veces retorna bytes directos, otras un objeto.
-        # Ajusta según tu versión. Si no hay contenido, devolvemos b''.
         if not content:
             return b""
         if isinstance(content, bytes):
             return content
-        # Si es un objeto tipo HTTPResponse, quizá debas usar content.read() o similar.
-        # Haz pruebas con logs.
         return content
-
     except Exception as e:
         logging.exception(f"No se pudo descargar '{filename}' desde Supabase:")
         return b""
 
 ######### Funciones principales #########
 def save_voting_file(voting_id: str, voting_data: dict, key: bytes):
-    """
-    Guarda (encripta) un dict JSON en:
-    - modo local (carpeta votaciones/)
-    - modo supabase (bucket)
-    según STORAGE_BACKEND.
-    """
     raw_json = json.dumps(voting_data).encode("utf-8")
     encrypted_data = encrypt_data(raw_json, key)
 
@@ -130,10 +103,6 @@ def save_voting_file(voting_id: str, voting_data: dict, key: bytes):
         raise ValueError(f"STORAGE_BACKEND desconocido o no soportado: {STORAGE_BACKEND}")
 
 def load_voting_file(voting_id: str, key: bytes) -> dict:
-    """
-    Carga y desencripta el fichero de votación (local o supabase).
-    Retorna un dict con el contenido JSON.
-    """
     if STORAGE_BACKEND == "local":
         encrypted_content = _load_voting_file_local(voting_id)
     elif STORAGE_BACKEND == "supabase":
@@ -144,7 +113,5 @@ def load_voting_file(voting_id: str, key: bytes) -> dict:
     else:
         raise ValueError(f"STORAGE_BACKEND desconocido o no soportado: {STORAGE_BACKEND}")
 
-    # Desencripta
     decrypted_bytes = decrypt_data(encrypted_content, key)
-    voting_data = json.loads(decrypted_bytes.decode("utf-8"))
-    return voting_data
+    return json.loads(decrypted_bytes.decode("utf-8"))
